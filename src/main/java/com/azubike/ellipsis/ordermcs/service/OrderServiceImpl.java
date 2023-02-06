@@ -26,7 +26,7 @@ public class OrderServiceImpl implements OrderService {
   public Mono<OrderResponseDto> processOrder(Mono<OrderRequestDto> orderRequestDtoMono) {
     return orderRequestDtoMono
         .map(RequestContext::new)
-        .flatMap(this::getProductPrice)
+        .flatMap(this::setProductDto)
         .doOnNext(ModelMapper::setTransactionRequestDto)
         .flatMap(this::performTransaction)
         .map(ModelMapper::toPurchaseOrder)
@@ -41,9 +41,9 @@ public class OrderServiceImpl implements OrderService {
         .map(ModelMapper::toOrderResponse).subscribeOn(Schedulers.boundedElastic());
   }
 
-  private Mono<RequestContext> getProductPrice(RequestContext requestContext) {
+  private Mono<RequestContext> setProductDto(RequestContext requestContext) {
     return productClient
-        .getProductById(requestContext.getProductDto().getId())
+        .getProductById(requestContext.getOrderRequestDto().getProductId())
         .doOnNext(requestContext::setProductDto)
         .thenReturn(requestContext);
   }

@@ -20,6 +20,7 @@ public class ModelMapper {
     PurchaseOrder purchaseOrder = new PurchaseOrder();
     purchaseOrder.setAmount(requestContext.getTransactionResponseDto().getAmount());
     purchaseOrder.setUserId(requestContext.getTransactionResponseDto().getUserId());
+    purchaseOrder.setProductId(requestContext.getProductDto().getId());
     OrderStatus orderStatus =
         requestContext.getTransactionResponseDto().getStatus().equals(TransactionStatus.APPROVED)
             ? OrderStatus.COMPLETED
