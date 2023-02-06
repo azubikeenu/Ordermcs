@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     return productClient
         .getProductById(requestContext.getOrderRequestDto().getProductId())
         .doOnNext(requestContext::setProductDto)
+        .retryWhen(Retry.fixedDelay(5, Duration.ofSeconds(1)))
         .thenReturn(requestContext);
   }
 
@@ -54,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
     return userClient
         .getUserById(requestContext.getOrderRequestDto().getUserId())
         .doOnNext(requestContext::setUserDto)
+        .retryWhen(Retry.fixedDelay(5, Duration.ofSeconds(1)))
         .thenReturn(requestContext);
   }
 
@@ -61,6 +66,7 @@ public class OrderServiceImpl implements OrderService {
     return userClient
         .makeTransaction(requestContext.getTransactionRequestDto())
         .doOnNext(requestContext::setTransactionResponseDto)
+        .retryWhen(Retry.fixedDelay(5, Duration.ofSeconds(1)))
         .thenReturn(requestContext);
   }
 }
