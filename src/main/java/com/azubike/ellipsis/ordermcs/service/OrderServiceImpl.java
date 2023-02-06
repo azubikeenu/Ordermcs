@@ -10,6 +10,7 @@ import com.azubike.ellipsis.ordermcs.utils.ModelMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -32,6 +33,12 @@ public class OrderServiceImpl implements OrderService {
         .map(repository::save)
         .map(ModelMapper::toOrderResponse)
         .subscribeOn(Schedulers.boundedElastic());
+  }
+
+  @Override
+  public Flux<OrderResponseDto> getOrdersById(int userId) {
+    return Flux.fromStream(() -> repository.findByUserId(userId).stream())
+        .map(ModelMapper::toOrderResponse).subscribeOn(Schedulers.boundedElastic());
   }
 
   private Mono<RequestContext> getProductPrice(RequestContext requestContext) {
