@@ -25,7 +25,7 @@ public class OrderController {
     return orderService.processOrder(orderRequestDtoMono);
   }
 
-  @GetMapping(value = "{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Flux<OrderResponseDto> getUserOrders(@PathVariable("userId") int userId) {
     return orderService.getOrdersById(userId);
   }
