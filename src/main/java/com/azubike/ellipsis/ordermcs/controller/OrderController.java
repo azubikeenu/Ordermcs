@@ -6,7 +6,10 @@ import com.azubike.ellipsis.ordermcs.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -20,9 +23,15 @@ public class OrderController {
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public Mono<OrderResponseDto> processOrder(
+  public Mono<ResponseEntity<OrderResponseDto>> processOrder(
       @RequestBody Mono<OrderRequestDto> orderRequestDtoMono) {
-    return orderService.processOrder(orderRequestDtoMono);
+    return orderService
+        .processOrder(orderRequestDtoMono)
+        .map(ResponseEntity::ok)
+        .onErrorReturn(WebClientResponseException.class, ResponseEntity.badRequest().build())
+        .onErrorReturn(
+            WebClientRequestException.class,
+            ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
   }
 
   @GetMapping(value = "users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)

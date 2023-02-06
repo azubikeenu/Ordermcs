@@ -27,6 +27,7 @@ public class OrderServiceImpl implements OrderService {
     return orderRequestDtoMono
         .map(RequestContext::new)
         .flatMap(this::setProductDto)
+        .flatMap(this::setUserDto)
         .doOnNext(ModelMapper::setTransactionRequestDto)
         .flatMap(this::performTransaction)
         .map(ModelMapper::toPurchaseOrder)
@@ -38,13 +39,21 @@ public class OrderServiceImpl implements OrderService {
   @Override
   public Flux<OrderResponseDto> getOrdersById(int userId) {
     return Flux.fromStream(() -> repository.findByUserId(userId).stream())
-        .map(ModelMapper::toOrderResponse).subscribeOn(Schedulers.boundedElastic());
+        .map(ModelMapper::toOrderResponse)
+        .subscribeOn(Schedulers.boundedElastic());
   }
 
   private Mono<RequestContext> setProductDto(RequestContext requestContext) {
     return productClient
         .getProductById(requestContext.getOrderRequestDto().getProductId())
         .doOnNext(requestContext::setProductDto)
+        .thenReturn(requestContext);
+  }
+
+  private Mono<RequestContext> setUserDto(RequestContext requestContext) {
+    return userClient
+        .getUserById(requestContext.getOrderRequestDto().getUserId())
+        .doOnNext(requestContext::setUserDto)
         .thenReturn(requestContext);
   }
 
